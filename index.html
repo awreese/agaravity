@@ -3,14 +3,31 @@
 	<head>
 		<title>Agaravity</title>
 		
-		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+		<script src="p5.min.js"></script> <!-- only used for local testing -->
 		<script src="agaravity.js"></script>
-		<script src="../lib/p5/p5.js"></script>
 		<script src="thing.js"></script>
+
+		<link href="css/main.css" rel="stylesheet"/>
 	</head>
 
 	<body>
-		<h2>Scroll down to see the sim!</h2>
-		<h5>If it runs too slowly, turn down "history length" and/or "num things"</h5>
+		<div class="agaravity">
+			<div class="panel-header">
+					<h2>Scroll down to see the sim!</h2>
+					<h5>If it runs too slowly, turn down "history length" and/or "num things"</h5>
+				</div>
+			<div class="agaravity-simulation">
+				<div id="control-panel">
+					<div class="panel-header">Controls</div>
+					<div id="controls">
+						<!-- Controls appended here -->
+					</div>
+				</div>
+				<div id="simulation-panel">
+					<!-- Canvas appended here -->
+				</div>
+			</div>
+		</div>
 	</body>
 </html>

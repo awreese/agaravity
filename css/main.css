@@ -1,0 +1,53 @@
+
+.agaravity {
+    border: 1px solid black;
+    border-radius: 10px;
+    overflow: hidden;
+    height: 97.5vh;
+}
+
+.agaravity-simulation {
+    height: auto;
+    padding: 10px;
+    overflow: hidden;
+}
+
+.panel-header {
+    text-align: center;
+    background-color: gray;
+}
+
+.panel-header * {
+    margin: 0;
+}
+
+#control-panel {
+    float: left;
+    margin-right: 10px;
+    overflow: hidden;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+
+#controls {
+    width: 230px;
+    overflow: auto;
+}
+
+#inputPanel {
+    padding: 10px;
+}
+
+#inputPanel input {
+    /*width: 80%;*/
+}
+
+#simulation-panel {
+    float: left;
+    overflow: hidden;
+}
+
+#simulation {
+    padding: 5px;
+}
+

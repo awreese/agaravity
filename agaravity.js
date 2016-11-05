@@ -1,6 +1,7 @@
 // View values
 var WIDTH = 0;
 var HEIGHT = 0;
+var PADDING = 10;
 var SCALE = 1.0;
 
 
@@ -40,10 +41,9 @@ function getZoomedHeight() {
 }
 
 function resetInputChange_cb() {
-	setWindowDimensions();
 	th = [];
+	sizeToFit();
 	createThings(INITIAL_NUM_THINGS);		
-	resizeCanvas(WIDTH, HEIGHT);	
 }
 
 function createButtonInput(container, name, clickedFunction) {
@@ -132,7 +132,7 @@ function createRangeInput(container, name, min, max, defaultValue, step, changeF
 	input.setAttribute("defaultValue", defaultValue);
 	input.value = defaultValue;
 	input.onchange = changeFunction;
-	input.style.width = Math.floor(0.9 * WIDTH) + "px";
+	// input.style.width = Math.floor(0.9 * WIDTH) + "px";
 	inputs[name] = input;
 	
 	var label = createLabel(name);
@@ -150,11 +150,32 @@ function createRangeInput(container, name, min, max, defaultValue, step, changeF
 }
 
 function setWindowDimensions() {
-	HEIGHT = window.innerHeight * 0.95;
-	WIDTH = window.innerWidth * 0.95;
+	var agaravityWindow = $(".agaravity");
+	var agaravityPanel = $(".agaravity-simulation");
+	var agaravityPanelHeader = agaravityWindow.find(".panel-header");
+	var controlPanel = $("#control-panel");
+	
+	HEIGHT = agaravityWindow.height() - agaravityPanelHeader.outerHeight(true) - (2 * PADDING);
+	WIDTH = agaravityPanel.width() - controlPanel.outerWidth(true);
 
-	if (WIDTH == 0 || HEIGHT == 0)
+	if (WIDTH == 0 || HEIGHT == 0) {
 		WIDTH = HEIGHT = 1080;
+	}
+
+	console.log("Width x Height: (" + WIDTH + " x " + HEIGHT + ")");
+}
+
+function windowResized() {
+	sizeToFit();
+}
+
+function sizeToFit() {
+	setWindowDimensions();
+	$("#control-panel").outerHeight(HEIGHT);
+	$("#controls").height(HEIGHT - (2 * PADDING));
+	$("#simulation-panel").width(WIDTH);
+	$("#simulation-panel").height(HEIGHT);
+	resizeCanvas(WIDTH, HEIGHT);
 }
 
 function startStopInputChange_cb() {
@@ -195,7 +216,7 @@ function trackLargestThingInputChange_cb() {
 	//	 maybe scroll wheel to change strength
 	trackLargestThingEnabled = ! trackLargestThingEnabled
 
-	console.log(trackLargestThingEnabled);
+	console.log("trackLargestThingEnabled=" + trackLargestThingEnabled);
 }
 
 function historyLengthChange_cb() {
@@ -244,7 +265,8 @@ function timeScaleInputChange_cb() {
 }
 
 function createInputs() {
-	var inputContainer = document.createElement("DIV");
+	var inputContainer = document.createElement("div");
+	inputContainer.id = "inputPanel";
 
 	//					 container,		 name					min 	max		default 			step 	callback
 	createRangeInput	(inputContainer, "random mass base", 	1, 		5000, 	RANDOM_MASS_CENTER, 1, 		randomMassCenterInputChange_cb); 
@@ -273,7 +295,7 @@ function createInputs() {
 	createButtonInput	(inputContainer, "start/stop", startStopInputChange_cb);
 	createButtonInput	(inputContainer, "reset", resetInputChange_cb);
 
-	document.body.appendChild(inputContainer);
+	document.getElementById("controls").appendChild(inputContainer);
 
 }
 
@@ -282,10 +304,12 @@ function appendBR(element) {
 }
 
 function setup() {
-	setWindowDimensions();
 	createInputs();	
 
-	createCanvas(WIDTH, HEIGHT);
+	var canvas = createCanvas(WIDTH, HEIGHT);
+	canvas.parent("simulation-panel");
+	sizeToFit();
+
 	createThings(INITIAL_NUM_THINGS);
 
 	lastFrameTime = getTime();
@@ -319,10 +343,10 @@ function draw() {
 		logFrameRate();
 	}
 
-	background(25);
+	background(248);
 
-	fill(255);	
-	rect(10, 10, WIDTH -20, HEIGHT -20);
+	// fill(255);	
+	// rect(10, 10, WIDTH -20, HEIGHT -20);
 
 	if (!stopped) {
 		handleInteractions();
