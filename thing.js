@@ -150,9 +150,13 @@ function thing(mass, pos, vel) {
 	}
 	
 	this.updateHistory = function() {
-		this.history.unshift(this.pos.copy());
-		if (this.history.length > HISTORY_LENGTH) {
-			this.history.pop();
+		if (SHOW_HISTORY) { // Only calculate if showing history
+			this.history.unshift(this.pos.copy());
+			if (this.history.length > HISTORY_LENGTH) {
+				this.history.pop();
+			}
+		} else {
+			this.history.length = 0;
 		}
 	}
 	
