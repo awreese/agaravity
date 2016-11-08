@@ -221,11 +221,7 @@ function thing(mass, pos, vel) {
 
 	this.showHistory = function() {
 		if (SHOW_HISTORY) {
-			var historyColor = {
-				red: 0,
-				green: 128,
-				blue: 200
-			};
+			var historyColor = color(0, 128, 200);
 
 			var alpha = HISTORY_ALPHA;
 			var k = 0.75;
@@ -242,7 +238,7 @@ function thing(mass, pos, vel) {
 				// draw history disk
 				push();
 					translate(this.history[i].x, this.history[i].y);
-					fill(historyColor.red, historyColor.green, historyColor.blue, alpha * 255);
+					fill(red(historyColor), green(historyColor), blue(historyColor), alpha * 255);
 					ellipse(0, 0, (1 - i / this.history.length) * this.getRadius());
 				pop();
 
