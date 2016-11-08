@@ -31,6 +31,7 @@ var stopped = false;
 var bounceEnabled = true;
 var trackLargestThingEnabled = false;
 var showFrameRate = true;
+var showStats = true;
 
 function getZoomedWidth() {
 	return WIDTH / SCALE;
@@ -132,12 +133,12 @@ function createRangeInput(container, name, min, max, defaultValue, step, changeF
 	input.setAttribute("defaultValue", defaultValue);
 	input.value = defaultValue;
 	input.onchange = changeFunction;
-	// input.style.width = Math.floor(0.9 * WIDTH) + "px";
 	inputs[name] = input;
 	
 	var label = createLabel(name);
 
-	var readOut = document.createElement("SPAN");
+	var readOut = document.createElement("div");
+	readOut.classList.add("readout");
 	readOut.innerHTML = defaultValue;
 	input.readOut = readOut;
 	
@@ -199,6 +200,11 @@ function showHistoryChange_cb() {
 function showDisplayRate_cb() {
 	showFrameRate = !showFrameRate;
 	console.log("showFrameRate=" + showFrameRate);
+}
+
+function showStats_cb() {
+	showStats = !showStats;
+	console.log("showStats=" + showStats);
 }
 
 function zoomInputChange_cb() {
@@ -287,10 +293,12 @@ function createInputs() {
 	createRangeInput	(inputContainer, "num things", 				1, 		1500, 	INITIAL_NUM_THINGS, 1, 		numThingsInputChange_cb);
 	createRangeInput	(inputContainer, "time scale",		0.1,		2.5,	TIME_SCALE,	0.005,	timeScaleInputChange_cb);	
 
+	//					 container,		 name					default 			callback
 	createCheckboxInput	(inputContainer, "enable bounce", 		bounceEnabled, enableBounceInputChange_cb);
 	createCheckboxInput	(inputContainer, "track largest thing", trackLargestThingEnabled, trackLargestThingInputChange_cb);
 	createCheckboxInput	(inputContainer, "enable show history", SHOW_HISTORY, 	showHistoryChange_cb);
-	createCheckboxInput (inputContainer, "show framerate",		showFrameRate, 		showDisplayRate_cb);
+	// createCheckboxInput (inputContainer, "show framerate",		showFrameRate, 		showDisplayRate_cb);
+	createCheckboxInput (inputContainer, "nerd stuffs", 		showStats, 	showStats_cb);
 	
 	createButtonInput	(inputContainer, "start/stop", startStopInputChange_cb);
 	createButtonInput	(inputContainer, "reset", resetInputChange_cb);
@@ -363,21 +371,38 @@ function draw() {
 
 	displayThings();
 	pop();
-	displayFrameRate();
+	// displayFrameRate();
+	displayStats();
+}
+
+function displayStats() {
+	if (showStats) {
+		push();
+		noStroke();
+		fill('rgba(0,0,0,0.25)');
+		rect(15, 15, 250, 100);
+		textAlign(LEFT);
+		fill(0,255,51);
+		textSize(32);
+
+		displayFrameRate();
+		displayNumThings();
+		pop();
+	}
 }
 
 function displayFrameRate() {
 	if (showFrameRate) {
 		push();
-		noStroke();
-		fill('rgba(0,0,0,0.25)');
-		rect(15, 15, 250, 50);
-		
-		fill(0,255,51);
-		textSize(32);
 		text("framerate: " + round(frameRate() * 10.0) / 10, 20, 50);
 		pop();
 	}
+}
+
+function displayNumThings() {
+	push();
+	text("things: " + th.length, 20, 90);
+	pop();
 }
 
 function getLargestThingIndex() {
@@ -415,9 +440,11 @@ function handleInteractions() {
 				}
 			}
 		}
+
+		th[i].applyAccumulatedForce(); // one less iteration, slight performance increase
 	}
-	for (var i = 0; i < th.length; i++)
-		th[i].applyAccumulatedForce();
+	// for (var i = 0; i < th.length; i++)
+	// 	th[i].applyAccumulatedForce();
 }
 
 function logFrameRate() {
