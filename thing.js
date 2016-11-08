@@ -190,8 +190,8 @@ function thing(mass, pos, vel) {
 					if (alpha <= HISTORY_ALPHA_CUTOFF_THRESHOLD) {
 						break;
 					}
-					var diskColor = "rgba(" + gsl + "," + gsl + "," + gsl + "," + alpha + ")"
-					fill(diskColor);
+					
+					fill(gsl, alpha * 255);
 					ellipse(0, 0, r_indicator * (1 + float(r / gradientLevels)));
 				}
 				
@@ -221,13 +221,16 @@ function thing(mass, pos, vel) {
 
 	this.showHistory = function() {
 		if (SHOW_HISTORY) {
-			var red = 0;
-			var green = 128;
-			var blue = 200;
-			var historyColor;
+			var historyColor = {
+				red: 0,
+				green: 128,
+				blue: 200
+			};
 
 			var alpha = HISTORY_ALPHA;
 			var k = 0.75;
+
+			noStroke();
 
 			for (var i = 0; i < this.history.length; i++) {
 				alpha = HISTORY_ALPHA * exp(log(k) * i);				
@@ -238,11 +241,8 @@ function thing(mass, pos, vel) {
 
 				// draw history disk
 				push();
-					historyColor = "rgba(" + red + "," + green + "," + blue + "," + alpha + ")";
-
-					noStroke();
 					translate(this.history[i].x, this.history[i].y);
-					fill(historyColor);
+					fill(historyColor.red, historyColor.green, historyColor.blue, alpha * 255);
 					ellipse(0, 0, (1 - i / this.history.length) * this.getRadius());
 				pop();
 
