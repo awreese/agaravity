@@ -27,10 +27,11 @@
     overflow: hidden;
     border: 1px solid black;
     border-radius: 5px;
+    font-size: 10pt;
 }
 
 #controls {
-    width: 230px;
+    width: 160px;
     overflow: auto;
 }
 
@@ -39,7 +40,21 @@
 }
 
 #inputPanel input {
-    /*width: 80%;*/
+    /*width: 60%;*/
+    display: inline;
+}
+
+input[type=range] {
+    width: 60%;
+    height: 5px;
+}
+
+.readout {
+    border: 1px solid black;
+    border-radius: 3px;
+    width: 30%;
+    display: inline;
+    vertical-align: middle;
 }
 
 #simulation-panel {
