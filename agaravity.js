@@ -431,20 +431,26 @@ function displayThings() {
 
 function handleInteractions() {
 	for (var i = 0; i < th.length; i++) {
-		for (var j = 0; j < th.length; j++) {
+		for (var j = i; j < th.length; j++) {
 			if (i != j) {
-				th[i].accumulateForce(th[i].getGravitationalForce(th[j]));
 				if (th[i].isCollidingWith(th[j])) {
-					if (th[i].mass > th[j].mass)
+					if (th[i].mass >= th[j].mass) {
 						th[i].absorb(th[j]);
+					} else {
+						th[j].absorb(th[i]);
+					}
+						
 				}
+
+				var force = th[i].getGravitationalForce(th[j]);
+				th[i].accumulateForce(force);
+				th[j].accumulateForce(force.mult(-1.0));
 			}
 		}
 
 		th[i].applyAccumulatedForce(); // one less iteration, slight performance increase
 	}
-	// for (var i = 0; i < th.length; i++)
-	// 	th[i].applyAccumulatedForce();
+	
 }
 
 function logFrameRate() {
