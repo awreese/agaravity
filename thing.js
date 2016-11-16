@@ -13,6 +13,7 @@ var HISTORY_LENGTH = 20;
 var HISTORY_ALPHA = 0.5;
 var HISTORY_ALPHA_CUTOFF_THRESHOLD = 0.05;
 var SHOW_HISTORY = true;
+var SHOW_PARTICLES = false;
 
 
 function ThingParticleSystem(parent) {
@@ -43,7 +44,7 @@ ThingParticle.prototype.display = function() {
 	strokeWeight(random(1, 5));
 	point(this.position.x, this.position.y);
 	pop();
-}
+};
 
 
 /* Notes
@@ -65,7 +66,6 @@ function thing(mass, pos, vel) {
 	this.radius = Math.sqrt(this.mass / DENSITY / Math.PI);
 
 	this.history = [];
-	// this.ps = new ParticleSystem;
 	this.tps = new ThingParticleSystem(this);
 
 	this.accumulatedForce = createVector(0, 0);
@@ -115,7 +115,7 @@ function thing(mass, pos, vel) {
 	};
 
 	this.isCollidingWith = function(otherThing) {
-		return (p5.Vector.sub(this.pos, otherThing.pos)).magSq() <= (this.mass + otherThing.mass) / (DENSITY * PI);
+		return (p5.Vector.sub(this.pos, otherThing.pos)).magSq() <= (this.mass + otherThing.mass) / DENSITY / PI;
 	};
 
 	this.getGravitationalForce = function(otherThing) {
@@ -163,7 +163,6 @@ function thing(mass, pos, vel) {
 		this.updatePositionAndAngle();
 		if (bounceEnabled)
 			this.handleEdgeBounce();
-		// this.ps.addParticle(new Particle(this.pos.copy()));
 		// this.tps.addParticle();
 	};
 
@@ -196,6 +195,9 @@ function thing(mass, pos, vel) {
 			
 	};
 
+	/*
+	Reflects velocity vector v across surface normal vector n with applied restituion (i.e. some energy is lost)
+	*/
 	this.reflect = function(v, n) {
 		// v - Restitution * v.dot(n) * n;
 		return p5.Vector.sub(v, n.mult(v.copy().dot(n) * 2)).mult(BOUNCE_FACTOR);
@@ -232,52 +234,53 @@ function thing(mass, pos, vel) {
 
 		push();
 			translate(this.pos.x, this.pos.y);
-			rotate(this.angle);
 
 			// draw large "orbit" disc
 			push();
-				var gsl = 128;
-				
-				var gradientLevels = 20;
-				
-				var alpha = 0.5;
-				var k = 0.88;
+			var gsl = 128;
+			
+			var gradientLevels = 20;
+			
+			var alpha = 0.5;
+			var k = 0.88;
 
-				noStroke();
-
-				// use gradient to create "cloud" around thing
-				for (var r = 1; r <= gradientLevels; r++) {
-					alpha = HISTORY_ALPHA * exp(log(k) * r);
-					if (alpha <= HISTORY_ALPHA_CUTOFF_THRESHOLD) {
-						break;
-					}
-					
-					fill(gsl, alpha * 255);
-					ellipse(0, 0, r_indicator * (1 + float(r / gradientLevels)));
+			// use gradient to create "cloud" around thing
+			for (var r = 1; r <= gradientLevels; r++) {
+				alpha = HISTORY_ALPHA * exp(log(k) * r);
+				if (alpha <= HISTORY_ALPHA_CUTOFF_THRESHOLD) {
+					break;
 				}
 				
+				stroke(gsl, alpha * 255);
+				strokeWeight(2 * r_indicator * (1 + float(r / gradientLevels)));
+				point(0,0);
+			}
 			pop();
 			
 			// draw the actual "thing"
 			push();
-				noStroke();
-				fill(64);
-				ellipse(0, 0, radius);
+			stroke(64);
+			strokeWeight(2 * radius);
+			point(0,0);
 			pop();
 			
 			// draw rotation indicator
 			push();
-				translate(0, r_indicator);
-				// noStroke();
-				fill(255, 0, 0);
-				ellipse(0, 0, radius * INDICATOR_SIZE_RATIO);
+			rotate(this.angle);
+			translate(0, r_indicator);
+
+			stroke(255,0,0);
+			strokeWeight(2 * radius * INDICATOR_SIZE_RATIO);
+			point(0,0);
 			pop();
 
 			push();
-				var sinComponent = (sin(frameCount / 30) + 1) / 2;
-				var breathingCenterRadius = (0.5 + sinComponent * 0.5) * radius * 0.6;
-				fill(200, 200, 200);
-				ellipse(0, 0, breathingCenterRadius);
+			var sinComponent = (sin(frameCount / 30) + 1) / 2;
+			var breathingCenterRadius = (0.5 + sinComponent * 0.5) * radius * 0.6;
+			
+			stroke(200);
+			strokeWeight(2 * breathingCenterRadius);
+			point(0,0);
 			pop();
 		pop();
 	};
@@ -289,8 +292,6 @@ function thing(mass, pos, vel) {
 			var alpha = HISTORY_ALPHA;
 			var k = 0.75;
 
-			push();
-			noStroke();
 			for (var i = 0, length = this.history.length; i < length; i++) {
 				alpha = HISTORY_ALPHA * exp(log(k) * i);				
 				
@@ -301,12 +302,12 @@ function thing(mass, pos, vel) {
 				// draw history disk
 				push();
 				translate(this.history[i].x, this.history[i].y);
-				fill(red(historyColor), green(historyColor), blue(historyColor), alpha * 255);
-				ellipse(0, 0, (1 - i / this.history.length) * this.getRadius());
-				pop();
 
+				stroke(red(historyColor), green(historyColor), blue(historyColor), alpha * 255);
+				strokeWeight(2 * (1 - i / this.history.length) * this.getRadius());
+				point(0,0);
+				pop();
 			}
-			pop();
 
 		}
 	};
