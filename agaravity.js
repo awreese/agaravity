@@ -371,7 +371,6 @@ function draw() {
 
 	displayThings();
 	pop();
-	// displayFrameRate();
 	displayStats();
 }
 
