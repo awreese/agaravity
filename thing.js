@@ -46,6 +46,56 @@ ThingParticle.prototype.display = function() {
 	pop();
 };
 
+function createBufferedThingImage() {
+	pg = createGraphics(1000, 1000);
+
+	pg.push();
+		var radius = pg.width * 0.4 / 2;
+		var r_indicator = radius * (1 - INDICATOR_SIZE_RATIO);
+
+		pg.translate(pg.width / 2, pg.height / 2); // center of buffer
+
+		pg.push();
+			var gsl = 128;
+			var gradientLevels = 50;
+			var alpha = 0.5;
+			var k = 0.88;
+
+			// use gradient to create "cloud" around thing
+			for (var r = 1; r <= gradientLevels; r++) {
+				alpha = HISTORY_ALPHA * exp(log(k) * r);
+				if (alpha <= HISTORY_ALPHA_CUTOFF_THRESHOLD) {
+					break;
+				}
+				
+				pg.stroke(gsl, alpha * 255);
+				pg.strokeWeight(2 * radius * (1 + float(r / gradientLevels)));
+				pg.point(0,0);
+			}
+		pg.pop();
+		
+		// draw the actual "thing"
+		pg.push();
+			pg.stroke(64);
+			pg.strokeWeight(2 * radius);
+			pg.point(0,0);
+		pg.pop();
+
+		// draw rotation indicator
+		pg.push();
+			// rotate(this.angle);
+			pg.translate(0, r_indicator);
+
+			pg.stroke(255,0,0);
+			pg.strokeWeight(2 * radius * INDICATOR_SIZE_RATIO);
+			pg.point(0,0);
+		pg.pop();
+
+	pg.pop();
+
+	return pg;
+};
+
 
 /* Notes
 *	-rotational inertia for a disk, I = 0.5 * m * r * r 
@@ -56,7 +106,7 @@ ThingParticle.prototype.display = function() {
 
 function thing(mass, pos, vel) {
 	// fields
-	this.angle = 0;
+	this.angle = random(0, TAU);
 	this.angularVelocity = 0.1;
 	this.mass = mass;
 	this.pos = pos;
@@ -229,54 +279,14 @@ function thing(mass, pos, vel) {
 	};
 
 	this.showBody = function() {
-		var radius = Math.floor(this.getRadius());
-		var r_indicator = radius * (1 - INDICATOR_SIZE_RATIO);
-
 		push();
 			translate(this.pos.x, this.pos.y);
-
-			// draw large "orbit" disc
-			push();
-			var gsl = 128;
-			
-			var gradientLevels = 20;
-			
-			var alpha = 0.5;
-			var k = 0.88;
-
-			// use gradient to create "cloud" around thing
-			for (var r = 1; r <= gradientLevels; r++) {
-				alpha = HISTORY_ALPHA * exp(log(k) * r);
-				if (alpha <= HISTORY_ALPHA_CUTOFF_THRESHOLD) {
-					break;
-				}
-				
-				stroke(gsl, alpha * 255);
-				strokeWeight(2 * r_indicator * (1 + float(r / gradientLevels)));
-				point(0,0);
-			}
-			pop();
-			
-			// draw the actual "thing"
-			push();
-			stroke(64);
-			strokeWeight(2 * radius);
-			point(0,0);
-			pop();
-			
-			// draw rotation indicator
-			push();
 			rotate(this.angle);
-			translate(0, r_indicator);
-
-			stroke(255,0,0);
-			strokeWeight(2 * radius * INDICATOR_SIZE_RATIO);
-			point(0,0);
-			pop();
+			image(bufferedThingImage, 0, 0, 5 * this.radius, 5 * this.radius);
 
 			push();
-			var sinComponent = (sin(frameCount / 30) + 1) / 2;
-			var breathingCenterRadius = (0.5 + sinComponent * 0.5) * radius * 0.6;
+			var sinComponent = (sin((frameCount + this.angle) / 30) + 1) / 2;
+			var breathingCenterRadius = (0.5 + sinComponent * 0.5) * this.radius * 0.6;
 			
 			stroke(200);
 			strokeWeight(2 * breathingCenterRadius);

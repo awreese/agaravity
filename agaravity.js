@@ -311,6 +311,8 @@ function appendBR(element) {
 	element.appendChild(document.createElement("BR"));
 }
 
+var bufferedThingImage;
+
 function setup() {
 	createInputs();	
 
@@ -321,9 +323,11 @@ function setup() {
 	createThings(INITIAL_NUM_THINGS);
 
 	lastFrameTime = getTime();
-	imageMode(CORNER);
+	imageMode(CENTER);
 
 	ellipseMode(RADIUS);
+
+	bufferedThingImage = createBufferedThingImage();
 }
 
 function createThings(numberOfThings) {
