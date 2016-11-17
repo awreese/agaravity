@@ -46,6 +46,9 @@ ThingParticle.prototype.display = function() {
 	pop();
 };
 
+/*
+Creates background buffered canvas to draw a Thing onto, which can then be scaled and rotated when drawn on the main canvas.  Saves repetitive calculations.
+*/
 function createBufferedThingImage() {
 	pg = createGraphics(1000, 1000);
 
@@ -83,9 +86,7 @@ function createBufferedThingImage() {
 
 		// draw rotation indicator
 		pg.push();
-			// rotate(this.angle);
 			pg.translate(0, r_indicator);
-
 			pg.stroke(255,0,0);
 			pg.strokeWeight(2 * radius * INDICATOR_SIZE_RATIO);
 			pg.point(0,0);
@@ -95,7 +96,6 @@ function createBufferedThingImage() {
 
 	return pg;
 };
-
 
 /* Notes
 *	-rotational inertia for a disk, I = 0.5 * m * r * r 
