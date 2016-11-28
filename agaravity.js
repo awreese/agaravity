@@ -8,11 +8,11 @@ var SCALE = 1.0;
 // Reset values
 var INITIAL_NUM_THINGS = 250;
 
-var RANDOM_MASS_CENTER = 2275;
-var RANDOM_MASS_RADIUS = 100;
+var RANDOM_MASS_BASE = 2275;
+var RANDOM_MASS_RANGE = 100;
 
-var RANDOM_VEL_CENTER = 0;
-var RANDOM_VEL_RADIUS = 25;
+var RANDOM_VEL_BASE = 0;
+var RANDOM_VEL_RANGE = 25;
 
 // debugging vars
 var lastFrameTime = 0;
@@ -242,25 +242,25 @@ function historyAlphaLevel_cb() {
 
 function randomMassCenterInputChange_cb() {
 	console.log("Random mass center changed to " + this.value);
-	RANDOM_MASS_CENTER = this.value;
+	RANDOM_MASS_BASE = this.value;
 	this.readOut.innerHTML = this.value;
 }
 
 function randomMassRadiusInputChange_cb() {
 	console.log("Random mass radius changed to " + this.value);
-	RANDOM_MASS_RADIUS = this.value;
+	RANDOM_MASS_RANGE = this.value;
 	this.readOut.innerHTML = this.value;
 }
 
 function randomVelCenterInputChange_cb() {
 	console.log("Random vel center changed to " + this.value);
-	RANDOM_VEL_CENTER = this.value;
+	RANDOM_VEL_BASE = this.value;
 	this.readOut.innerHTML = this.value;
 }
 
 function randomVelRadiusInputChange_cb() {
 	console.log("Random vel radius changed to " + this.value);
-	RANDOM_VEL_RADIUS = this.value;
+	RANDOM_VEL_RANGE = this.value;
 	this.readOut.innerHTML = this.value;
 }
 
@@ -275,10 +275,10 @@ function createInputs() {
 	inputContainer.id = "inputPanel";
 
 	//					 container,		 name					min 	max		default 			step 	callback
-	createRangeInput	(inputContainer, "random mass base", 	1, 		5000, 	RANDOM_MASS_CENTER, 1, 		randomMassCenterInputChange_cb); 
-	createRangeInput	(inputContainer, "random mass range",	1, 		500, 	RANDOM_MASS_RADIUS, 1, 		randomMassRadiusInputChange_cb);
-	createRangeInput	(inputContainer, "random vel base", 	0, 		100, 	RANDOM_VEL_CENTER, 	1, 		randomVelCenterInputChange_cb);
-	createRangeInput	(inputContainer, "random vel range", 	0, 		100, 	RANDOM_VEL_RADIUS, 	1, 		randomVelRadiusInputChange_cb);
+	createRangeInput	(inputContainer, "random mass base", 	1, 		5000, 	RANDOM_MASS_BASE, 1, 		randomMassCenterInputChange_cb); 
+	createRangeInput	(inputContainer, "random mass range",	1, 		500, 	RANDOM_MASS_RANGE, 1, 		randomMassRadiusInputChange_cb);
+	createRangeInput	(inputContainer, "random vel base", 	0, 		100, 	RANDOM_VEL_BASE, 	1, 		randomVelCenterInputChange_cb);
+	createRangeInput	(inputContainer, "random vel range", 	0, 		100, 	RANDOM_VEL_RANGE, 	1, 		randomVelRadiusInputChange_cb);
 	createRangeInput	(inputContainer, "grav", 				0, 		2, 	GRAV, 				0.0001, 	gravInputChange_cb);
 	createRangeInput	(inputContainer, "history length", 			0, 		100, 	HISTORY_LENGTH, 	1, 		historyLengthChange_cb);
 
@@ -323,8 +323,8 @@ function setup() {
 	createThings(INITIAL_NUM_THINGS);
 
 	lastFrameTime = getTime();
-	imageMode(CENTER);
 
+	imageMode(CENTER);
 	ellipseMode(RADIUS);
 
 	bufferedThingImage = createBufferedThingImage();
@@ -336,13 +336,22 @@ function createThings(numberOfThings) {
 }
 
 function randomMass() {
-	return RANDOM_MASS_CENTER + (2 * RANDOM_MASS_RADIUS * Math.random()) - RANDOM_MASS_RADIUS;
+	return randomRange(RANDOM_MASS_BASE, RANDOM_MASS_RANGE);
 }
 
 function randomVelocity() {
-	return createVector(RANDOM_VEL_CENTER + (2 * RANDOM_VEL_RADIUS * Math.random()) - RANDOM_VEL_RADIUS,
-			    RANDOM_VEL_CENTER + (2 * RANDOM_VEL_RADIUS * Math.random()) - RANDOM_VEL_RADIUS);
+	return p5.Vector.random2D().setMag(randomRange(RANDOM_VEL_BASE, RANDOM_VEL_RANGE));
 }
+
+/*
+Returns random value within the range from base or 
+base if the returned value would be less than 0
+*/
+function randomRange(base, range) {
+	var halfRange = range / 2;
+	var randomVal = base + random(-halfRange, halfRange);
+	return randomVal < 0 ? base : randomVal;
+};
 
 function randomPosition() {
 	return createVector(Math.random() * getZoomedWidth(), Math.random() * getZoomedHeight());
@@ -418,7 +427,7 @@ function getLargestThingIndex() {
 }
 
 function updateThings() {
-	for (var i = 0; i < th.length; i++) {
+	for (var i = th.length - 1; i >= 0; i--) {
 		if (th[i].shouldBeDestroyed) {
 			th.splice(i, 1);
 		} else {
