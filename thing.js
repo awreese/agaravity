@@ -17,7 +17,7 @@ var SHOW_PARTICLES = false;
 
 
 function ThingParticleSystem(parent) {
-    ParticleSystem.call(this);
+    ParticleSystem.call(this, parent.pos, 255.0);
     this.parent = parent;
 };
 
@@ -35,7 +35,7 @@ function ThingParticle(position) {
 };
 
 ThingParticle.prototype = Object.create(Particle.prototype);
-ThingParticle.prototype.constructor = Particle;
+ThingParticle.prototype.constructor = ThingParticle;
 
 ThingParticle.prototype.display = function() {
 	push();
@@ -165,7 +165,7 @@ function thing(mass, pos, vel) {
 	};
 
 	this.isCollidingWith = function(otherThing) {
-		return (p5.Vector.sub(this.pos, otherThing.pos)).magSq() <= (this.mass + otherThing.mass) / DENSITY / PI;
+		return (p5.Vector.sub(this.pos, otherThing.pos)).magSq() <= this.radius * this.radius + otherThing.radius * otherThing.radius;
 	};
 
 	this.getGravitationalForce = function(otherThing) {
