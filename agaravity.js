@@ -30,7 +30,6 @@ var inputs = {};
 var stopped = false;
 var bounceEnabled = true;
 var trackLargestThingEnabled = false;
-var showFrameRate = true;
 var showStats = true;
 
 function getZoomedWidth() {
@@ -43,8 +42,8 @@ function getZoomedHeight() {
 
 function resetInputChange_cb() {
 	th = [];
+	createThings(INITIAL_NUM_THINGS);
 	sizeToFit();
-	createThings(INITIAL_NUM_THINGS);		
 }
 
 function createButtonInput(container, name, clickedFunction) {
@@ -181,6 +180,12 @@ function sizeToFit() {
 
 function startStopInputChange_cb() {
 	stopped = ! stopped;
+
+	if (stopped) {
+		noLoop();
+	} else {
+		loop();
+	}
 }
 
 function gravInputChange_cb() {
@@ -230,11 +235,6 @@ function historyLengthChange_cb() {
 	this.readOut.innerHTML = this.value;
 }
 
-function historyAlphaCutoffThreshold_cb() {
-	HISTORY_ALPHA_CUTOFF_THRESHOLD = this.value;
-	this.readOut.innerHTML = this.value;
-}
-
 function historyAlphaLevel_cb() {
 	HISTORY_ALPHA = this.value;
 	this.readOut.innerHTML = this.value;
@@ -275,19 +275,14 @@ function createInputs() {
 	inputContainer.id = "inputPanel";
 
 	//					 container,		 name					min 	max		default 			step 	callback
-	createRangeInput	(inputContainer, "random mass base", 	1, 		5000, 	RANDOM_MASS_BASE, 1, 		randomMassCenterInputChange_cb); 
-	createRangeInput	(inputContainer, "random mass range",	1, 		500, 	RANDOM_MASS_RANGE, 1, 		randomMassRadiusInputChange_cb);
-	createRangeInput	(inputContainer, "random vel base", 	0, 		100, 	RANDOM_VEL_BASE, 	1, 		randomVelCenterInputChange_cb);
-	createRangeInput	(inputContainer, "random vel range", 	0, 		100, 	RANDOM_VEL_RANGE, 	1, 		randomVelRadiusInputChange_cb);
-	createRangeInput	(inputContainer, "grav", 				0, 		2, 	GRAV, 				0.0001, 	gravInputChange_cb);
-	createRangeInput	(inputContainer, "history length", 			0, 		100, 	HISTORY_LENGTH, 	1, 		historyLengthChange_cb);
+	createRangeInput	(inputContainer, "random mass base", 	1, 		5000, 	RANDOM_MASS_BASE,  1, 		randomMassCenterInputChange_cb); 
+	createRangeInput	(inputContainer, "random mass range",	0, 		500, 	RANDOM_MASS_RANGE, 1, 		randomMassRadiusInputChange_cb);
+	createRangeInput	(inputContainer, "random vel base", 	0, 		100, 	RANDOM_VEL_BASE,   1, 		randomVelCenterInputChange_cb);
+	createRangeInput	(inputContainer, "random vel range", 	0, 		100, 	RANDOM_VEL_RANGE,  1, 		randomVelRadiusInputChange_cb);
+	createRangeInput	(inputContainer, "grav", 				0, 		2, 		GRAV, 			   0.0001, 	gravInputChange_cb);
+	createRangeInput	(inputContainer, "history length", 		0, 		1000, 	HISTORY_LENGTH,    1, 		historyLengthChange_cb);
 
-	createRangeInput	(inputContainer, "history alpha",		0.5,	1.0,	HISTORY_ALPHA,
-		0.1, 	historyAlphaLevel_cb);
-
-	createRangeInput	(inputContainer, "history alpha cutoff threshold", 
-																0.0, 	1.0, 	HISTORY_ALPHA_CUTOFF_THRESHOLD,
-		0.05, 	historyAlphaCutoffThreshold_cb);
+	createRangeInput	(inputContainer, "history alpha",		0.0,	1.0,	HISTORY_ALPHA,     0.1, 	historyAlphaLevel_cb);
 
 	createRangeInput	(inputContainer, "zoom", 				0.05, 	2.5, 	1.0, 				0.01, 	zoomInputChange_cb);
 	createRangeInput	(inputContainer, "num things", 				1, 		1500, 	INITIAL_NUM_THINGS, 1, 		numThingsInputChange_cb);
@@ -297,7 +292,6 @@ function createInputs() {
 	createCheckboxInput	(inputContainer, "enable bounce", 		bounceEnabled, enableBounceInputChange_cb);
 	createCheckboxInput	(inputContainer, "track largest thing", trackLargestThingEnabled, trackLargestThingInputChange_cb);
 	createCheckboxInput	(inputContainer, "enable show history", SHOW_HISTORY, 	showHistoryChange_cb);
-	// createCheckboxInput (inputContainer, "show framerate",		showFrameRate, 		showDisplayRate_cb);
 	createCheckboxInput (inputContainer, "nerd stuffs", 		showStats, 	showStats_cb);
 	
 	createButtonInput	(inputContainer, "start/stop", startStopInputChange_cb);
@@ -349,12 +343,12 @@ base if the returned value would be less than 0
 */
 function randomRange(base, range) {
 	var halfRange = range / 2;
-	var randomVal = base + random(-halfRange, halfRange);
+	var randomVal = float(base) + random(-halfRange, halfRange);
 	return randomVal < 0 ? base : randomVal;
 };
 
 function randomPosition() {
-	return createVector(Math.random() * getZoomedWidth(), Math.random() * getZoomedHeight());
+	return createVector(random(getZoomedWidth()), random(getZoomedHeight()));
 }
 
 function draw() {
@@ -364,15 +358,7 @@ function draw() {
 		logFrameRate();
 	}
 
-	background(248);
-
-	// fill(255);	
-	// rect(10, 10, WIDTH -20, HEIGHT -20);
-
-	if (!stopped) {
-		handleInteractions();
-		updateThings();
-	}
+	background(0);
 
 	push();
 	scale(SCALE, SCALE);
@@ -381,7 +367,7 @@ function draw() {
 		translate(getZoomedWidth() / 2 - largestThing.pos.x, getZoomedHeight() / 2 - largestThing.pos.y);
 	}
 
-
+	handleInteractions();
 	displayThings();
 	pop();
 	displayStats();
@@ -404,17 +390,11 @@ function displayStats() {
 }
 
 function displayFrameRate() {
-	if (showFrameRate) {
-		push();
-		text("framerate: " + round(frameRate() * 10.0) / 10, 20, 50);
-		pop();
-	}
+	text("framerate: " + round(frameRate() * 10.0) / 10, 20, 50);
 }
 
 function displayNumThings() {
-	push();
 	text("things: " + th.length, 20, 90);
-	pop();
 }
 
 function getLargestThingIndex() {
@@ -426,43 +406,48 @@ function getLargestThingIndex() {
 	return largestThingIndex;
 }
 
-function updateThings() {
+function displayThings() {
+	
 	for (var i = th.length - 1; i >= 0; i--) {
-		if (th[i].shouldBeDestroyed) {
+		var t = th[i];
+
+		t.update();
+
+		if (t.shouldBeDestroyed) {
 			th.splice(i, 1);
 		} else {
-			th[i].update();
+			t.show();
 		}
 	}
-}
-
-function displayThings() {
-	for (var i = 0; i < th.length; i++)
-			th[i].show();
 }
 
 function handleInteractions() {
 	for (var i = 0; i < th.length; i++) {
-		for (var j = i; j < th.length; j++) {
-			if (i != j) {
-				if (th[i].isCollidingWith(th[j])) {
-					if (th[i].mass >= th[j].mass) {
-						th[i].absorb(th[j]);
-					} else {
-						th[j].absorb(th[i]);
-					}
-						
-				}
-
-				var force = th[i].getGravitationalForce(th[j]);
-				th[i].accumulateForce(force);
-				th[j].accumulateForce(force.mult(-1.0));
+		for (var j = i + 1; j < th.length; j++) {
+			
+			if (th[i].shouldBeDestroyed) {
+				break; // thing[i] already absorbed, skip calculations
 			}
+
+			if (th[j].shouldBeDestroyed) {
+				continue; // thing[j] already absorbed, skip this thing
+			}
+
+			if (th[i].isCollidingWith(th[j])) {
+				if (th[i].mass >= th[j].mass) {
+					th[i].absorb(th[j]);
+				} else {
+					th[j].absorb(th[i]);
+				}
+			}
+
+			var force = th[i].getGravitationalForce(th[j]);
+			th[i].accumulateForce(force);
+			th[j].accumulateForce(force.mult(-1.0));
 		}
 
-		th[i].applyAccumulatedForce(); // one less iteration, slight performance increase
+		th[i].applyAccumulatedForce();
 	}
-	
 }
 
 function logFrameRate() {
