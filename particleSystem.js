@@ -26,21 +26,48 @@ THE SOFTWARE.
 Simple particle system
 A simple particle system to spawn new particles at a specified position.
 */
-var ParticleSystem = function() {
+var ParticleSystem = function(position, lifespan) {
+    this.position = position.copy();
+    this.lifespan  = lifespan;
     this.particles = [];
 };
 
 /*
-Adds new particle to the system at the specified position
+Adds new particle to the system.
 */
-ParticleSystem.prototype.addParticle = function(position) {
-    particle = new Particle(position.copy());
+ParticleSystem.prototype.addParticle = function() {
+    if (this.isDead()) {
+        return;
+    }
+    particle = new Particle(this.position, p5.random2D().setMag(1.0), createVector(0,0), this.lifespan);
     this.particles.push(particle);
 };
 
+/*
+Update system and display it.
+*/
 ParticleSystem.prototype.run = function() {
-    for (var i = 0; i < this.particles.length; i++) {
+    this.update();
+    this.display();
+};
+
+/*
+Updates to this system, i.e. lifespan is decremented usually.
+By default standard particle systems don't expire.  This method must be
+overridden in order to give a system a lifespan (or any other updating).
+*/
+ParticleSystem.prototype.update = function() {
+  // this.lifespan--;
+};
+
+/*
+Displays this particle system by calling the run method on all it's 
+particles, then removing those particles that have expired.
+*/
+ParticleSystem.prototype.display = function() {
+    for (var i = this.particles.length - 1; i >= 0; i--) {
         var p = this.particles[i];
+        
         p.run();
         if (p.isDead()) {
             this.particles.splice(i, 1);
@@ -48,47 +75,61 @@ ParticleSystem.prototype.run = function() {
     }
 };
 
+/*
+Returns true if this particle system's lifespan has expired, false otherwise.
+*/
+ParticleSystem.prototype.isDead = function () {
+  return this.lifespan < 0;
+};
+
+/*
+Returns true if this system is expired and all particles have expired, false otherwise.
+Allows system to still display and run existing particles until they expire.
+*/
+ParticleSystem.prototype.isDepleted = function() {
+  return this.isDead() && this.particles.length < 0;
+};
+
 
 /*
 Simple particle
-A simple particle has an initial position vector
+A simple particle has initial position, velocity, and acceleration vectors, and lifespan.
 */
-var Particle = function(position) {
-    this.acceleration = createVector(0, 0);
-    this.velocity     = createVector(random(-1, 1), random(-1, 1));
+var Particle = function(position, velocity, acceleration, lifespan) {
+    this.acceleration = acceleration.copy();
+    this.velocity     = velocity.copy();
     this.position     = position.copy();
-    this.lifespan     = 255.0;
+    this.lifespan     = lifespan;
 };
 
+/*
+Update particle and display it.
+*/
 Particle.prototype.run = function() {
     this.update();
     this.display();
 };
 
 /*
-Updates position and lifespan of particle
+Updates position and lifespan of particle.
 */
 Particle.prototype.update = function() {
     this.velocity.add(this.acceleration);
     this.position.add(this.velocity);
-    this.lifespan -= 4;
+    this.lifespan--;
 };
 
 /*
-Displays this particle
+Displays this particle.
 */
 Particle.prototype.display = function() {
-    push();
-    stroke(0, 0, 0, this.lifespan);
-    // strokeWeight(random(1, 5));
+    stroke(0, this.lifespan);
     point(this.position.x, this.position.y);
-    pop();
 };
 
 /*
-Is this particle still alive?
+Returns true if this particle's lifespan has expired, false otherwise.
 */
 Particle.prototype.isDead = function() {
     return this.lifespan < 0;
 };
-
