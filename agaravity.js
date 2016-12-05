@@ -232,6 +232,9 @@ function trackLargestThingInputChange_cb() {
 
 function historyLengthChange_cb() {
 	HISTORY_LENGTH = this.value;
+	for (var i = 0; i < th.length; i++) {
+		th[i].history.splice(HISTORY_LENGTH);
+	}
 	this.readOut.innerHTML = this.value;
 }
 
