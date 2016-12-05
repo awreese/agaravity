@@ -39,7 +39,7 @@ ParticleSystem.prototype.addParticle = function() {
     if (this.isDead()) {
         return;
     }
-    particle = new Particle(this.position, p5.random2D().setMag(1.0), createVector(0,0), this.lifespan);
+    particle = new Particle(this.position, p5.Vector.random2D().setMag(1.0), createVector(0,0), this.lifespan);
     this.particles.push(particle);
 };
 
